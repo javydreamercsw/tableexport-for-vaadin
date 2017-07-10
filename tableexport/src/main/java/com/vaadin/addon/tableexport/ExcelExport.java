@@ -516,6 +516,10 @@ public class ExcelExport extends TableExport {
             if (displayTotals) {
                 addDataRow(hierarchicalTotalsSheet, rootId, localRow);
             }
+            if (count > 1) {
+                sheet.groupRow(localRow + 1, (localRow + count) - 1);
+                sheet.setRowGroupCollapsed(localRow + 1, true);
+            }
             localRow = localRow + count;
         }
         return localRow;
@@ -553,14 +557,17 @@ public class ExcelExport extends TableExport {
      * @return the int
      */
     private int addDataRowRecursively(final Sheet sheetToAddTo, final Object rootItemId, final int row) {
+        int numberAdded = 0;
+        int localRow = row;
         addDataRow(sheetToAddTo, rootItemId, row);
-        int numberAdded = 1;
-        final Collection<?> children = ((Container.Hierarchical) getTableHolder().getContainerDataSource()).getChildren(rootItemId);
-        if (children != null) {
+        numberAdded++;
+        if (((Container.Hierarchical) getTableHolder().getContainerDataSource()).hasChildren(rootItemId)) {
+            final Collection<?> children = ((Container.Hierarchical) getTableHolder().getContainerDataSource())
+                    .getChildren(rootItemId);
             for (final Object child : children) {
-                numberAdded += addDataRowRecursively(sheetToAddTo, child, row + numberAdded);
+                localRow++;
+                numberAdded = numberAdded + addDataRowRecursively(sheetToAddTo, child, localRow);
             }
-            sheet.groupRow(row + 1, row + numberAdded - 1);
         }
         return numberAdded;
     }
