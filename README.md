@@ -8,9 +8,12 @@ worked with Vaadin 6 should still be available on the Vaadin.com site.
 * This add-on takes a Table as input and exports a decent Excel file containing the data in the Container. It also handles HierarchicalContainers and the resulting Excel file will have the categories and subcategories properly grouped/outlined.
 * There are a number of configurable properties. The user can specify a worksheet name, a report title, and an output file name. The user can also specify if there should be a Totals row at the bottom of the export. The user can pass in custom POI CellStyles. However, if none of these are specified, the user only needs to pass in a Table.
 * This add-on requires the Apache POI library.
-* This add-on requires the Apache Commons IO library (http://commons.apache.org/io/).
 * This add-on uses Charles Anthony's solution from: http://vaadin.com/forum/-/message_boards/view_message/159583
 * The included icon comes from the fugue open source (Creative Commons) icon set.
+
+This is basically the fork from [Mletenay](https://github.com/javydreamercsw/tableexport-for-vaadin/commits/master?author=mletenay) with the following changes:
+* vaadin-7 branch is up to date except for the Vaadin 8 changes.
+* master branch has the Vadin 8 support files.
 
 ## Building and running demo
 
