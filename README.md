@@ -1,6 +1,6 @@
-# TableExport Add-on for Vaadin 7
+# TableExport Add-on for Vaadin 8
 
-TableExport is a Data Component add-on for Vaadin 7.  Legacy versions of the add-on that
+TableExport is a Data Component add-on for Vaadin 8. For Vaadin 7 support see the vaadin-7 branch. Legacy versions of the add-on that
 worked with Vaadin 6 should still be available on the Vaadin.com site.
 
 ## Overview
