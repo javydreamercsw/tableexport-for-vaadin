@@ -34,9 +34,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.renderers.NumberRenderer;
-import org.apache.commons.io.FilenameUtils;
-
-import javax.servlet.annotation.WebServlet;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -44,32 +41,34 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.servlet.annotation.WebServlet;
+import org.apache.commons.io.FilenameUtils;
 
 @Theme("tableexport-theme")
 @Widgetset("com.vaadin.addon.tableexport.demo.TableExportWidgetset")
 public class TableExportUI extends UI {
 
     private static final long serialVersionUID = -5436901535719211794L;
-    
+
     @WebServlet(urlPatterns = "/*", name = "TableExportUIServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = TableExportUI.class, productionMode = false)
     public static class TableExportUIServlet extends VaadinServlet {
     }
 
     private BeanItemContainer<PayCheck> container;
-    private SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yy");
-    private DecimalFormat df = new DecimalFormat("#0.0000");
+    private final SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yy");
+    private final DecimalFormat df = new DecimalFormat("#0.0000");
 
     // from: http://dev-answers.blogspot.com/2006/06/how-do-you-print-java-classpath.html
     public String getClasspathString() {
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
         ClassLoader applicationClassLoader = this.getClass().getClassLoader();
         if (applicationClassLoader == null) {
             applicationClassLoader = ClassLoader.getSystemClassLoader();
         }
         URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
-        for (int i = 0; i < urls.length; i++) {
-            classpath.append(urls[i].getFile()).append("\r\n");
+        for (URL url : urls) {
+            classpath.append(url.getFile()).append("\r\n");
         }
 
         return classpath.toString();
@@ -81,12 +80,16 @@ public class TableExportUI extends UI {
         getPage().setTitle("Table Export Test");
 
         // Create the table
-        container = new BeanItemContainer<PayCheck>(PayCheck.class);
+        container = new BeanItemContainer<>(PayCheck.class);
         try {
-            final PayCheck p1 = new PayCheck("John Smith", sdf.parse("09/17/2011"), 1000.0, 2, true, "garbage1");
-            final PayCheck p2 = new PayCheck("John Smith", sdf.parse("09/24/2011"), 1000.0, 1, true, "garbage2");
-            final PayCheck p3 = new PayCheck("Jane Doe", sdf.parse("08/31/2011"), 750.0, 20, false, "garbage3");
-            final PayCheck p4 = new PayCheck("Jane Doe", sdf.parse("09/07/2011"), 750.0, 10000, false, "garbage4");
+            final PayCheck p1 = new PayCheck("John Smith",
+                    sdf.parse("09/17/2011"), 1000.0, 2, true, "garbage1");
+            final PayCheck p2 = new PayCheck("John Smith",
+                    sdf.parse("09/24/2011"), 1000.0, 1, true, "garbage2");
+            final PayCheck p3 = new PayCheck("Jane Doe",
+                    sdf.parse("08/31/2011"), 750.0, 20, false, "garbage3");
+            final PayCheck p4 = new PayCheck("Jane Doe",
+                    sdf.parse("09/07/2011"), 750.0, 10000, false, "garbage4");
             container.addBean(p1);
             container.addBean(p2);
             container.addBean(p3);
@@ -164,9 +167,9 @@ public class TableExportUI extends UI {
 
             @Override
             public void valueChange(final Property.ValueChangeEvent event) {
-                final String fn = exportFileNameField.getValue().toString();
+                final String fn = exportFileNameField.getValue();
                 final String justName = FilenameUtils.getBaseName(fn);
-                if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
+                if (exportAsCsvUsingXLS2CSVmra.getValue()) {
                     exportFileNameField.setValue(justName + ".csv");
                 } else {
                     exportFileNameField.setValue(justName + ".xls");
@@ -212,29 +215,29 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                if (!"".equals(sheetNameField.getValue().toString())) {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
-                        excelExport = new CsvExport(tableHolder, sheetNameField.getValue().toString());
+                if (!"".equals(sheetNameField.getValue())) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
+                        excelExport = new CsvExport(tableHolder, sheetNameField.getValue());
                     } else {
-                        excelExport = new ExcelExport(tableHolder, sheetNameField.getValue().toString());
+                        excelExport = new ExcelExport(tableHolder, sheetNameField.getValue());
                     }
                 } else {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
                         excelExport = new CsvExport(tableHolder);
                     } else {
                         excelExport = new ExcelExport(tableHolder);
                     }
                 }
-                if (!"".equals(reportTitleField.getValue().toString())) {
-                    excelExport.setReportTitle(reportTitleField.getValue().toString());
+                if (!"".equals(reportTitleField.getValue())) {
+                    excelExport.setReportTitle(reportTitleField.getValue());
                 }
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setDisplayTotals(((Boolean) totalsRowField.getValue()).booleanValue());
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setDisplayTotals((totalsRowField.getValue()));
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.export();
             }
         });
@@ -244,29 +247,29 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                if (!"".equals(sheetNameField.getValue().toString())) {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
-                        excelExport = new CsvExport(tableHolder, sheetNameField.getValue().toString());
+                if (!"".equals(sheetNameField.getValue())) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
+                        excelExport = new CsvExport(tableHolder, sheetNameField.getValue());
                     } else {
-                        excelExport = new EnhancedFormatExcelExport(tableHolder, sheetNameField.getValue().toString());
+                        excelExport = new EnhancedFormatExcelExport(tableHolder, sheetNameField.getValue());
                     }
                 } else {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
                         excelExport = new CsvExport(tableHolder);
                     } else {
                         excelExport = new EnhancedFormatExcelExport(tableHolder);
                     }
                 }
-                if (!"".equals(reportTitleField.getValue().toString())) {
-                    excelExport.setReportTitle(reportTitleField.getValue().toString());
+                if (!"".equals(reportTitleField.getValue())) {
+                    excelExport.setReportTitle(reportTitleField.getValue());
                 }
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setDisplayTotals(((Boolean) totalsRowField.getValue()).booleanValue());
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setDisplayTotals((totalsRowField.getValue()));
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.export();
             }
         });
@@ -276,15 +279,16 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                excelExport = new ExcelExport(tableHolder, sheetNameField.getValue().toString(),
-                        reportTitleField.getValue().toString(), exportFileNameField.getValue().toString(),
-                        ((Boolean) totalsRowField.getValue()).booleanValue());
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                excelExport = new ExcelExport(tableHolder, sheetNameField.getValue(),
+                        reportTitleField.getValue(),
+                        exportFileNameField.getValue(),
+                        (totalsRowField.getValue()));
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.convertTable();
                 excelExport.setNextTableHolder(tableHolder, "Second Sheet");
                 excelExport.export();
@@ -296,17 +300,17 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                excelExport = new FontExampleExcelExport(tableHolder, sheetNameField.getValue().toString());
-                if (!"".equals(reportTitleField.getValue().toString())) {
-                    excelExport.setReportTitle(reportTitleField.getValue().toString());
+                excelExport = new FontExampleExcelExport(tableHolder, sheetNameField.getValue());
+                if (!"".equals(reportTitleField.getValue())) {
+                    excelExport.setReportTitle(reportTitleField.getValue());
                 }
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setDisplayTotals(((Boolean) totalsRowField.getValue()).booleanValue());
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setDisplayTotals((totalsRowField.getValue()));
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.export();
             }
         });
@@ -393,7 +397,7 @@ public class TableExportUI extends UI {
             public Property getGeneratedProperty(final Object itemId, final Object columnId) {
                 final PayCheck p = (PayCheck) itemId;
                 final Double tax = .0825 * p.getAmount();
-                return new ObjectProperty<Double>(tax, Double.class);
+                return new ObjectProperty<>(tax, Double.class);
             }
 
             @Override
@@ -421,9 +425,9 @@ public class TableExportUI extends UI {
         // this also sets the order of the columns
         table.setVisibleColumns(new Object[]{"name", "date", "amount", "weeks", "taxes", "manager", "garbage"});
         table.setColumnHeaders(new String[]{"Name", "Date", "Amount Earned", "Weeks Worked", "Taxes Paid",
-                "Is Manager?", "Collapsed Column Test"});
+            "Is Manager?", "Collapsed Column Test"});
         table.setColumnAlignments(new Table.Align[]{Table.Align.LEFT, Table.Align.CENTER, Table.Align.RIGHT, Table.Align.RIGHT, Table.Align.CENTER,
-                Table.Align.LEFT, Table.Align.LEFT});
+            Table.Align.LEFT, Table.Align.LEFT});
         table.setColumnCollapsingAllowed(true);
 
         TabSheet tableOptionsTab = new TabSheet();
@@ -454,9 +458,9 @@ public class TableExportUI extends UI {
 
             @Override
             public void valueChange(final Property.ValueChangeEvent event) {
-                final String fn = exportFileNameField.getValue().toString();
+                final String fn = exportFileNameField.getValue();
                 final String justName = FilenameUtils.getBaseName(fn);
-                if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
+                if (exportAsCsvUsingXLS2CSVmra.getValue()) {
                     exportFileNameField.setValue(justName + ".csv");
                 } else {
                     exportFileNameField.setValue(justName + ".xls");
@@ -504,35 +508,35 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                if (!"".equals(sheetNameField.getValue().toString())) {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
-                        excelExport = new CsvExport(table, sheetNameField.getValue().toString());
+                if (!"".equals(sheetNameField.getValue())) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
+                        excelExport = new CsvExport(table, sheetNameField.getValue());
                     } else {
-                        excelExport = new ExcelExport(table, sheetNameField.getValue().toString());
+                        excelExport = new ExcelExport(table, sheetNameField.getValue());
                     }
                 } else {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
                         excelExport = new CsvExport(table);
                     } else {
                         excelExport = new ExcelExport(table);
                     }
                 }
-                if ((Boolean) excludeCollapsedColumns.getValue()) {
+                if (excludeCollapsedColumns.getValue()) {
                     excelExport.excludeCollapsedColumns();
                 }
-                if ((Boolean) useTableFormatProperty.getValue()) {
+                if (useTableFormatProperty.getValue()) {
                     excelExport.setUseTableFormatPropertyValue(true);
                 }
-                if (!"".equals(reportTitleField.getValue().toString())) {
-                    excelExport.setReportTitle(reportTitleField.getValue().toString());
+                if (!"".equals(reportTitleField.getValue())) {
+                    excelExport.setReportTitle(reportTitleField.getValue());
                 }
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setDisplayTotals(((Boolean) totalsRowField.getValue()).booleanValue());
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setDisplayTotals((totalsRowField.getValue()));
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.export();
             }
         });
@@ -542,35 +546,35 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                if (!"".equals(sheetNameField.getValue().toString())) {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
-                        excelExport = new CsvExport(table, sheetNameField.getValue().toString());
+                if (!"".equals(sheetNameField.getValue())) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
+                        excelExport = new CsvExport(table, sheetNameField.getValue());
                     } else {
-                        excelExport = new EnhancedFormatExcelExport(table, sheetNameField.getValue().toString());
+                        excelExport = new EnhancedFormatExcelExport(table, sheetNameField.getValue());
                     }
                 } else {
-                    if ((Boolean) exportAsCsvUsingXLS2CSVmra.getValue()) {
+                    if (exportAsCsvUsingXLS2CSVmra.getValue()) {
                         excelExport = new CsvExport(table);
                     } else {
                         excelExport = new EnhancedFormatExcelExport(table);
                     }
                 }
-                if ((Boolean) excludeCollapsedColumns.getValue()) {
+                if (excludeCollapsedColumns.getValue()) {
                     excelExport.excludeCollapsedColumns();
                 }
-                if ((Boolean) useTableFormatProperty.getValue()) {
+                if (useTableFormatProperty.getValue()) {
                     excelExport.setUseTableFormatPropertyValue(true);
                 }
-                if (!"".equals(reportTitleField.getValue().toString())) {
-                    excelExport.setReportTitle(reportTitleField.getValue().toString());
+                if (!"".equals(reportTitleField.getValue())) {
+                    excelExport.setReportTitle(reportTitleField.getValue());
                 }
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setDisplayTotals(((Boolean) totalsRowField.getValue()).booleanValue());
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setDisplayTotals((totalsRowField.getValue()));
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.export();
             }
         });
@@ -580,21 +584,23 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                excelExport = new ExcelExport(table, sheetNameField.getValue().toString(),
-                        reportTitleField.getValue().toString(), exportFileNameField.getValue().toString(),
-                        ((Boolean) totalsRowField.getValue()).booleanValue());
-                if ((Boolean) excludeCollapsedColumns.getValue()) {
+                excelExport = new ExcelExport(table,
+                        sheetNameField.getValue(),
+                        reportTitleField.getValue(),
+                        exportFileNameField.getValue(),
+                        (totalsRowField.getValue()));
+                if (excludeCollapsedColumns.getValue()) {
                     excelExport.excludeCollapsedColumns();
                 }
-                if ((Boolean) useTableFormatProperty.getValue()) {
+                if (useTableFormatProperty.getValue()) {
                     excelExport.setUseTableFormatPropertyValue(true);
                 }
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.convertTable();
                 excelExport.setNextTable(table, "Second Sheet");
                 excelExport.export();
@@ -606,20 +612,20 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                excelExport = new FontExampleExcelExport(table, sheetNameField.getValue().toString());
-                if ((Boolean) excludeCollapsedColumns.getValue()) {
+                excelExport = new FontExampleExcelExport(table, sheetNameField.getValue());
+                if (excludeCollapsedColumns.getValue()) {
                     excelExport.excludeCollapsedColumns();
                 }
-                if (!"".equals(reportTitleField.getValue().toString())) {
-                    excelExport.setReportTitle(reportTitleField.getValue().toString());
+                if (!"".equals(reportTitleField.getValue())) {
+                    excelExport.setReportTitle(reportTitleField.getValue());
                 }
-                if (!"".equals(exportFileNameField.getValue().toString())) {
-                    excelExport.setExportFileName(exportFileNameField.getValue().toString());
+                if (!"".equals(exportFileNameField.getValue())) {
+                    excelExport.setExportFileName(exportFileNameField.getValue());
                 }
-                excelExport.setDisplayTotals(((Boolean) totalsRowField.getValue()).booleanValue());
-                excelExport.setRowHeaders(((Boolean) rowHeadersField.getValue()).booleanValue());
-                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue().toString());
-                excelExport.setDoubleDataFormat(excelNumberFormat.getValue().toString());
+                excelExport.setDisplayTotals((totalsRowField.getValue()));
+                excelExport.setRowHeaders((rowHeadersField.getValue()));
+                excelExport.setExcelFormatOfProperty("date", excelDateFormat.getValue());
+                excelExport.setDoubleDataFormat(excelNumberFormat.getValue());
                 excelExport.export();
             }
         });
@@ -675,10 +681,12 @@ public class TableExportUI extends UI {
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                if (!"".equals(sheetNameField.getValue().toString())) {
-                    exportUsingJavaCsv = new CsvExportUsingJavaCsv(table, javaCsvExportFileNameField.getValue().toString());
+                if (!"".equals(sheetNameField.getValue())) {
+                    exportUsingJavaCsv = new CsvExportUsingJavaCsv(table,
+                            javaCsvExportFileNameField.getValue());
                 } else {
-                    exportUsingJavaCsv = new CsvExportUsingJavaCsv(table, "Table-Export.csv");
+                    exportUsingJavaCsv = new CsvExportUsingJavaCsv(table,
+                            "Table-Export.csv");
                 }
                 exportUsingJavaCsv.export();
             }
@@ -703,6 +711,7 @@ public class TableExportUI extends UI {
     }
 
     public class PayCheck implements Serializable {
+
         private static final long serialVersionUID = 9064899449347530333L;
         private String name;
         private Date date;
@@ -712,7 +721,7 @@ public class TableExportUI extends UI {
         private Object garbage;
 
         public PayCheck(final String name, final Date date, final double amount, final int weeks,
-                        final boolean manager, final Object garbageToIgnore) {
+                final boolean manager, final Object garbageToIgnore) {
             super();
             this.name = name;
             this.date = date;

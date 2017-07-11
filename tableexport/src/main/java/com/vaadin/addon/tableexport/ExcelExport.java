@@ -4,6 +4,17 @@ import com.vaadin.data.Container;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.ui.Table;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -20,19 +31,9 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.ss.util.RegionUtil;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Logger;
-
 /**
- * The Class ExcelExport. Implementation of TableExport to export Vaadin Tables to Excel .xls files.
+ * The Class ExcelExport. Implementation of TableExport to export Vaadin Tables
+ * to Excel .xls files.
  *
  * @author jnash
  * @version $Revision: 1.2 $
@@ -46,7 +47,8 @@ public class ExcelExport extends TableExport {
     private static final Logger LOGGER = Logger.getLogger(ExcelExport.class.getName());
 
     /**
-     * The name of the sheet in the workbook the table contents will be written to.
+     * The name of the sheet in the workbook the table contents will be written
+     * to.
      */
     protected String sheetName;
 
@@ -61,25 +63,29 @@ public class ExcelExport extends TableExport {
     protected String exportFileName;
 
     /**
-     * Flag indicating whether we will add a totals row to the Table. A totals row in the Table is
-     * typically implemented as a footer and therefore is not part of the data source.
+     * Flag indicating whether we will add a totals row to the Table. A totals
+     * row in the Table is typically implemented as a footer and therefore is
+     * not part of the data source.
      */
     protected boolean displayTotals;
 
     /**
-     * Flag indicating whether the first column should be treated as row headers. They will then be
-     * formatted either like the column headers or a special row headers CellStyle can be specified.
+     * Flag indicating whether the first column should be treated as row
+     * headers. They will then be formatted either like the column headers or a
+     * special row headers CellStyle can be specified.
      */
     protected boolean rowHeaders = false;
 
     /**
-     * Flag indicating whether we should use table.formatPropertyValue() as the cell value instead
-     * of the property value using the specified data formats.
+     * Flag indicating whether we should use table.formatPropertyValue() as the
+     * cell value instead of the property value using the specified data
+     * formats.
      */
     protected boolean useTableFormatPropertyValue = false;
 
     /**
-     * The workbook that contains the sheet containing the report with the table contents.
+     * The workbook that contains the sheet containing the report with the table
+     * contents.
      */
     protected final Workbook workbook;
 
@@ -96,18 +102,19 @@ public class ExcelExport extends TableExport {
     protected DataFormat dataFormat;
 
     /**
-     * Various styles that are used in report generation. These can be set by the user if the
-     * default style is not desired to be used.
+     * Various styles that are used in report generation. These can be set by
+     * the user if the default style is not desired to be used.
      */
     protected CellStyle dateCellStyle, doubleCellStyle, integerCellStyle, totalsDoubleCellStyle,
             totalsIntegerCellStyle, columnHeaderCellStyle, titleCellStyle;
     protected Short dateDataFormat, doubleDataFormat, integerDataFormat;
-    protected Map<Short, CellStyle> dataFormatCellStylesMap = new HashMap<Short, CellStyle>();
+    protected Map<Short, CellStyle> dataFormatCellStylesMap = new HashMap<>();
 
     /**
-     * The default row header style is null and, if row headers are specified with
-     * setRowHeaders(true), then the column headers style is used. setRowHeaderStyle() allows the
-     * user to specify a different row header style.
+     * The default row header style is null and, if row headers are specified
+     * with setRowHeaders(true), then the column headers style is used.
+     * setRowHeaderStyle() allows the user to specify a different row header
+     * style.
      */
     protected CellStyle rowHeaderCellStyle = null;
 
@@ -119,10 +126,11 @@ public class ExcelExport extends TableExport {
     // This let's the user specify the data format of the property in case the formatting of the property
     // will not be properly identified by the class of the property. In this case, the specified format is
     // used.  However, all other cell stylings will be those of the
-    protected Map<Object, String> propertyExcelFormatMap = new HashMap<Object, String>();
+    protected Map<Object, String> propertyExcelFormatMap = new HashMap<>();
 
     /**
-     * At minimum, we need a Table to export. Everything else has default settings.
+     * At minimum, we need a Table to export. Everything else has default
+     * settings.
      *
      * @param table the table
      */
@@ -133,7 +141,7 @@ public class ExcelExport extends TableExport {
     /**
      * Instantiates a new TableExport class.
      *
-     * @param table     the table
+     * @param table the table
      * @param sheetName the sheet name
      */
     public ExcelExport(final Table table, final String sheetName) {
@@ -143,8 +151,8 @@ public class ExcelExport extends TableExport {
     /**
      * Instantiates a new TableExport class.
      *
-     * @param table       the table
-     * @param sheetName   the sheet name
+     * @param table the table
+     * @param sheetName the sheet name
      * @param reportTitle the report title
      */
     public ExcelExport(final Table table, final String sheetName, final String reportTitle) {
@@ -154,41 +162,42 @@ public class ExcelExport extends TableExport {
     /**
      * Instantiates a new TableExport class.
      *
-     * @param table          the table
-     * @param sheetName      the sheet name
-     * @param reportTitle    the report title
+     * @param table the table
+     * @param sheetName the sheet name
+     * @param reportTitle the report title
      * @param exportFileName the export file name
      */
     public ExcelExport(final Table table, final String sheetName, final String reportTitle,
-                       final String exportFileName) {
+            final String exportFileName) {
         this(table, sheetName, reportTitle, exportFileName, true);
     }
 
     /**
-     * Instantiates a new TableExport class. This is the final constructor that all other
-     * constructors end up calling. If the other constructors were called then they pass in the
-     * default parameters.
+     * Instantiates a new TableExport class. This is the final constructor that
+     * all other constructors end up calling. If the other constructors were
+     * called then they pass in the default parameters.
      *
-     * @param table          the table
-     * @param sheetName      the sheet name
-     * @param reportTitle    the report title
+     * @param table the table
+     * @param sheetName the sheet name
+     * @param reportTitle the report title
      * @param exportFileName the export file name
-     * @param hasTotalsRow   flag indicating whether we should create a totals row
+     * @param hasTotalsRow flag indicating whether we should create a totals row
      */
     public ExcelExport(final Table table, final String sheetName, final String reportTitle,
-                       final String exportFileName, final boolean hasTotalsRow) {
+            final String exportFileName, final boolean hasTotalsRow) {
         this(table, new HSSFWorkbook(), sheetName, reportTitle, exportFileName, hasTotalsRow);
     }
 
     public ExcelExport(final Table table, final Workbook wkbk, final String shtName, final String rptTitle,
-                       final String xptFileName, final boolean hasTotalsRow) {
+            final String xptFileName, final boolean hasTotalsRow) {
         super(table);
         this.workbook = wkbk;
         init(shtName, rptTitle, xptFileName, hasTotalsRow);
     }
 
     /**
-     * At minimum, we need a Table to export. Everything else has default settings.
+     * At minimum, we need a Table to export. Everything else has default
+     * settings.
      *
      * @param tableHolder the tableHolder
      */
@@ -200,7 +209,7 @@ public class ExcelExport extends TableExport {
      * Instantiates a new TableExport class.
      *
      * @param tableHolder the tableHolder
-     * @param sheetName   the sheet name
+     * @param sheetName the sheet name
      */
     public ExcelExport(final TableHolder tableHolder, final String sheetName) {
         this(tableHolder, sheetName, null);
@@ -210,7 +219,7 @@ public class ExcelExport extends TableExport {
      * Instantiates a new TableExport class.
      *
      * @param tableHolder the tableHolder
-     * @param sheetName   the sheet name
+     * @param sheetName the sheet name
      * @param reportTitle the report title
      */
     public ExcelExport(final TableHolder tableHolder, final String sheetName, final String reportTitle) {
@@ -220,41 +229,41 @@ public class ExcelExport extends TableExport {
     /**
      * Instantiates a new TableExport class.
      *
-     * @param tableHolder    the tableHolder
-     * @param sheetName      the sheet name
-     * @param reportTitle    the report title
+     * @param tableHolder the tableHolder
+     * @param sheetName the sheet name
+     * @param reportTitle the report title
      * @param exportFileName the export file name
      */
     public ExcelExport(final TableHolder tableHolder, final String sheetName, final String reportTitle,
-                       final String exportFileName) {
+            final String exportFileName) {
         this(tableHolder, sheetName, reportTitle, exportFileName, true);
     }
 
     /**
-     * Instantiates a new TableExport class. This is the final constructor that all other
-     * constructors end up calling. If the other constructors were called then they pass in the
-     * default parameters.
+     * Instantiates a new TableExport class. This is the final constructor that
+     * all other constructors end up calling. If the other constructors were
+     * called then they pass in the default parameters.
      *
-     * @param tableHolder    the tableHolder
-     * @param sheetName      the sheet name
-     * @param reportTitle    the report title
+     * @param tableHolder the tableHolder
+     * @param sheetName the sheet name
+     * @param reportTitle the report title
      * @param exportFileName the export file name
-     * @param hasTotalsRow   flag indicating whether we should create a totals row
+     * @param hasTotalsRow flag indicating whether we should create a totals row
      */
     public ExcelExport(final TableHolder tableHolder, final String sheetName, final String reportTitle,
-                       final String exportFileName, final boolean hasTotalsRow) {
+            final String exportFileName, final boolean hasTotalsRow) {
         this(tableHolder, new HSSFWorkbook(), sheetName, reportTitle, exportFileName, hasTotalsRow);
     }
 
     public ExcelExport(final TableHolder tableHolder, final Workbook wkbk, final String shtName,
-                       final String rptTitle, final String xptFileName, final boolean hasTotalsRow) {
+            final String rptTitle, final String xptFileName, final boolean hasTotalsRow) {
         super(tableHolder);
         this.workbook = wkbk;
         init(shtName, rptTitle, xptFileName, hasTotalsRow);
     }
 
     private void init(final String shtName, final String rptTitle, final String xptFileName,
-                      final boolean hasTotalsRow) {
+            final boolean hasTotalsRow) {
         if ((null == shtName) || ("".equals(shtName))) {
             this.sheetName = "Table Export";
         } else {
@@ -325,7 +334,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Creates the workbook containing the exported table data, without exporting it to the user.
+     * Creates the workbook containing the exported table data, without
+     * exporting it to the user.
      */
     @Override
     public void convertTable() {
@@ -358,9 +368,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Export the workbook to the end-user.
-     * <p/>
-     * Code obtained from: http://vaadin.com/forum/-/message_boards/view_message/159583
+     * Export the workbook to the end-user. Code obtained from:
+     * http://vaadin.com/forum/-/message_boards/view_message/159583
      *
      * @return true, if successful
      */
@@ -378,20 +387,25 @@ public class ExcelExport extends TableExport {
             final boolean success = super.sendConvertedFileToUser(getTableHolder().getUI(), tempFile, exportFileName);
             return success;
         } catch (final IOException e) {
-            LOGGER.warning("Converting to XLS failed with IOException " + e);
+            LOGGER.log(Level.WARNING,
+                    "Converting to XLS failed with IOException {0}", e);
             return false;
         } finally {
-            tempFile.deleteOnExit();
+            if (tempFile != null) {
+                tempFile.deleteOnExit();
+            }
             try {
-                fileOut.close();
+                if (fileOut != null) {
+                    fileOut.close();
+                }
             } catch (final IOException e) {
             }
         }
     }
 
     /**
-     * Initial sheet setup. Override this method to specifically change initial, sheet-wide,
-     * settings.
+     * Initial sheet setup. Override this method to specifically change initial,
+     * sheet-wide, settings.
      */
     protected void initialSheetSetup() {
         final PrintSetup printSetup = sheet.getPrintSetup();
@@ -404,9 +418,10 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Adds the title row. Override this method to change title-related aspects of the workbook.
-     * Alternately, the title Row Object is accessible via getTitleRow() after report creation. To
-     * change title text use setReportTitle(). To change title CellStyle use setTitleStyle().
+     * Adds the title row. Override this method to change title-related aspects
+     * of the workbook. Alternately, the title Row Object is accessible via
+     * getTitleRow() after report creation. To change title text use
+     * setReportTitle(). To change title CellStyle use setTitleStyle().
      *
      * @return the int
      */
@@ -447,9 +462,10 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Adds the header row. Override this method to change header-row-related aspects of the
-     * workbook. Alternately, the header Row Object is accessible via getHeaderRow() after report
-     * creation. To change header CellStyle, though, use setHeaderStyle().
+     * Adds the header row. Override this method to change header-row-related
+     * aspects of the workbook. Alternately, the header Row Object is accessible
+     * via getHeaderRow() after report creation. To change header CellStyle,
+     * though, use setHeaderStyle().
      *
      * @param row the row
      */
@@ -461,8 +477,8 @@ public class ExcelExport extends TableExport {
         for (int col = 0; col < getPropIds().size(); col++) {
             propId = getPropIds().get(col);
             headerCell = headerRow.createCell(col);
-            headerCell.setCellValue(createHelper.createRichTextString(getTableHolder().getColumnHeader(propId)
-                    .toString()));
+            headerCell.setCellValue(createHelper.
+                    createRichTextString(getTableHolder().getColumnHeader(propId)));
             headerCell.setCellStyle(getColumnHeaderStyle(row, col));
 
             final Short poiAlignment = getTableHolder().getCellAlignment(propId);
@@ -471,12 +487,13 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * This method is called by addTotalsRow() to determine what CellStyle to use. By default we
-     * just return totalsCellStyle which is either set to the default totals style, or can be
-     * overriden by the user using setTotalsStyle(). However, if the user wants to have different
-     * total items have different styles, then this method should be overriden. The parameters
-     * passed in are all potentially relevant items that may be used to determine what formatting to
-     * return, that are not accessible globally.
+     * This method is called by addTotalsRow() to determine what CellStyle to
+     * use. By default we just return totalsCellStyle which is either set to the
+     * default totals style, or can be overriden by the user using
+     * setTotalsStyle(). However, if the user wants to have different total
+     * items have different styles, then this method should be overriden. The
+     * parameters passed in are all potentially relevant items that may be used
+     * to determine what formatting to return, that are not accessible globally.
      *
      * @param row the row
      * @param col the current column
@@ -490,12 +507,14 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * For Hierarchical Containers, this method recursively adds root items and child items. The
-     * child items are appropriately grouped using grouping/outlining sheet functionality. Override
-     * this method to make any changes. To change the CellStyle used for all Table data use
-     * setDataStyle(). For different data cells to have different CellStyles, override
-     * getDataStyle().
+     * For Hierarchical Containers, this method recursively adds root items and
+     * child items. The child items are appropriately grouped using
+     * grouping/outlining sheet functionality. Override this method to make any
+     * changes. To change the CellStyle used for all Table data use
+     * setDataStyle(). For different data cells to have different CellStyles,
+     * override getDataStyle().
      *
+     * @param sheetToAddTo Sheet to add data to.
      * @param row the row
      * @return the int
      */
@@ -508,7 +527,7 @@ public class ExcelExport extends TableExport {
          * at the top and the grouped/outlined subcategories below.
          */
         sheet.setRowSumsBelow(false);
-        int count = 0;
+        int count;
         for (final Object rootId : roots) {
             count = addDataRowRecursively(sheetToAddTo, rootId, localRow);
             // for totals purposes, we just want to add rootIds which contain totals
@@ -522,17 +541,19 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * this method adds row items for non-Hierarchical Containers. Override this method to make any
-     * changes. To change the CellStyle used for all Table data use setDataStyle(). For different
-     * data cells to have different CellStyles, override getDataStyle().
+     * this method adds row items for non-Hierarchical Containers. Override this
+     * method to make any changes. To change the CellStyle used for all Table
+     * data use setDataStyle(). For different data cells to have different
+     * CellStyles, override getDataStyle().
      *
+     * @param sheetToAddTo Sheet to add data to.
      * @param row the row
      * @return the int
      */
     protected int addDataRows(final Sheet sheetToAddTo, final int row) {
         final Collection<?> itemIds = getTableHolder().getContainerDataSource().getItemIds();
         int localRow = row;
-        int count = 0;
+        int count;
         for (final Object itemId : itemIds) {
             addDataRow(sheetToAddTo, itemId, localRow);
             count = 1;
@@ -549,16 +570,19 @@ public class ExcelExport extends TableExport {
      * Used by addHierarchicalDataRows() to implement the recursive calls.
      *
      * @param rootItemId the root item id
-     * @param row        the row
+     * @param row the row
      * @return the int
      */
-    private int addDataRowRecursively(final Sheet sheetToAddTo, final Object rootItemId, final int row) {
+    private int addDataRowRecursively(final Sheet sheetToAddTo,
+            final Object rootItemId, final int row) {
         addDataRow(sheetToAddTo, rootItemId, row);
         int numberAdded = 1;
-        final Collection<?> children = ((Container.Hierarchical) getTableHolder().getContainerDataSource()).getChildren(rootItemId);
+        final Collection<?> children = ((Container.Hierarchical) getTableHolder()
+                .getContainerDataSource()).getChildren(rootItemId);
         if (children != null) {
             for (final Object child : children) {
-                numberAdded += addDataRowRecursively(sheetToAddTo, child, row + numberAdded);
+                numberAdded += addDataRowRecursively(sheetToAddTo, child,
+                        row + numberAdded);
             }
             sheet.groupRow(row + 1, row + numberAdded - 1);
         }
@@ -566,13 +590,15 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * This method is ultimately used by either addDataRows() or addHierarchicalDataRows() to
-     * actually add the data to the Sheet.
+     * This method is ultimately used by either addDataRows() or
+     * addHierarchicalDataRows() to actually add the data to the Sheet.
      *
+     * @param sheetToAddTo Sheet to add data to.
      * @param rootItemId the root item id
-     * @param row        the row
+     * @param row the row
      */
-    protected void addDataRow(final Sheet sheetToAddTo, final Object rootItemId, final int row) {
+    protected void addDataRow(final Sheet sheetToAddTo, final Object rootItemId,
+            final int row) {
         final Row sheetRow = sheetToAddTo.createRow(row);
         Property prop;
         Object propId;
@@ -604,7 +630,8 @@ public class ExcelExport extends TableExport {
                         final Double d = Double.parseDouble(value.toString());
                         sheetCell.setCellValue(d);
                     } catch (final NumberFormatException nfe) {
-                        LOGGER.warning("NumberFormatException parsing a numeric value: " + nfe);
+                        LOGGER.log(Level.WARNING,
+                                "NumberFormatException parsing a numeric value: {0}", nfe);
                         sheetCell.setCellValue(createHelper.createRichTextString(value.toString()));
                     }
                 }
@@ -622,20 +649,20 @@ public class ExcelExport extends TableExport {
                 if (getTableHolder().isExportableFormattedProperty()) {
                     final String formattedProp = getTableHolder().getFormattedPropertyValue(rootItemId, propId, prop);
                     if (null == prop) {
-                        prop = new ObjectProperty<String>(formattedProp, String.class);
+                        prop = new ObjectProperty<>(formattedProp, String.class);
                     } else {
                         final Object val = prop.getValue();
                         if (null == val) {
-                            prop = new ObjectProperty<String>(formattedProp, String.class);
+                            prop = new ObjectProperty<>(formattedProp, String.class);
                         } else {
                             if (!val.toString().equals(formattedProp)) {
-                                prop = new ObjectProperty<String>(formattedProp, String.class);
+                                prop = new ObjectProperty<>(formattedProp, String.class);
                             }
                         }
                     }
                 } else {
-                    LOGGER.warning("Cannot use Table formatted property unless Table is instance of " +
-                            "ExportableFormattedProperty");
+                    LOGGER.warning("Cannot use Table formatted property unless Table is instance of "
+                            + "ExportableFormattedProperty");
                 }
             }
         }
@@ -660,19 +687,22 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * This method is called by addDataRow() to determine what CellStyle to use. By default we just
-     * return dataStyle which is either set to the default data style, or can be overriden by the
-     * user using setDataStyle(). However, if the user wants to have different data items have
-     * different styles, then this method should be overriden. The parameters passed in are all
-     * potentially relevant items that may be used to determine what formatting to return, that are
-     * not accessible globally.
+     * This method is called by addDataRow() to determine what CellStyle to use.
+     * By default we just return dataStyle which is either set to the default
+     * data style, or can be overriden by the user using setDataStyle().
+     * However, if the user wants to have different data items have different
+     * styles, then this method should be overriden. The parameters passed in
+     * are all potentially relevant items that may be used to determine what
+     * formatting to return, that are not accessible globally.
      *
      * @param rootItemId the root item id
-     * @param row        the row
-     * @param col        the col
+     * @param row the row
+     * @param col the col
+     * @param totalsRow add a totals row
      * @return the data style
      */
-    protected CellStyle getCellStyle(final Object rootItemId, final int row, final int col, final boolean totalsRow) {
+    protected CellStyle getCellStyle(final Object rootItemId, final int row,
+            final int col, final boolean totalsRow) {
         final Object propId = getPropIds().get(col);
         // get the basic style for the type of cell (i.e. data, header, total)
         if ((rowHeaders) && (col == 0)) {
@@ -725,13 +755,14 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Adds the totals row to the report. Override this method to make any changes. Alternately, the
-     * totals Row Object is accessible via getTotalsRow() after report creation. To change the
-     * CellStyle used for the totals row, use setFormulaStyle. For different totals cells to have
+     * Adds the totals row to the report. Override this method to make any
+     * changes. Alternately, the totals Row Object is accessible via
+     * getTotalsRow() after report creation. To change the CellStyle used for
+     * the totals row, use setFormulaStyle. For different totals cells to have
      * different CellStyles, override getTotalsStyle().
      *
      * @param currentRow the current row
-     * @param startRow   the start row
+     * @param startRow the start row
      */
     protected void addTotalsRow(final int currentRow, final int startRow) {
         totalsRow = sheet.createRow(currentRow);
@@ -765,9 +796,9 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Final formatting of the sheet upon completion of writing the data. For example, we can only
-     * size the column widths once the data is in the report and the sheet knows how wide the data
-     * is.
+     * Final formatting of the sheet upon completion of writing the data. For
+     * example, we can only size the column widths once the data is in the
+     * report and the sheet knows how wide the data is.
      */
     protected void finalSheetFormat() {
         final FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
@@ -798,7 +829,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Returns the default title style. Obtained from: http://svn.apache.org/repos/asf/poi
+     * Returns the default title style. Obtained from:
+     * http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
@@ -817,7 +849,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Returns the default header style. Obtained from: http://svn.apache.org/repos/asf/poi
+     * Returns the default header style. Obtained from:
+     * http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
@@ -839,7 +872,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Returns the default data cell style. Obtained from: http://svn.apache.org/repos/asf/poi
+     * Returns the default data cell style. Obtained from:
+     * http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
@@ -863,7 +897,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Returns the default totals row style for Double data. Obtained from: http://svn.apache.org/repos/asf/poi
+     * Returns the default totals row style for Double data. Obtained from:
+     * http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
@@ -881,7 +916,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Returns the default totals row style for Integer data. Obtained from: http://svn.apache.org/repos/asf/poi
+     * Returns the default totals row style for Integer data. Obtained from:
+     * http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
@@ -953,7 +989,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Utility method to determine whether value being put in the Cell is numeric.
+     * Utility method to determine whether value being put in the Cell is
+     * numeric.
      *
      * @param type the type
      * @return true, if is numeric
@@ -962,14 +999,12 @@ public class ExcelExport extends TableExport {
         if (isIntegerLongShortOrBigDecimal(type)) {
             return true;
         }
-        if (isDoubleOrFloat(type)) {
-            return true;
-        }
-        return false;
+        return isDoubleOrFloat(type);
     }
 
     /**
-     * Utility method to determine whether value being put in the Cell is integer-like type.
+     * Utility method to determine whether value being put in the Cell is
+     * integer-like type.
      *
      * @param type the type
      * @return true, if is integer-like
@@ -984,14 +1019,12 @@ public class ExcelExport extends TableExport {
         if ((Short.class.equals(type)) || (short.class.equals(type))) {
             return true;
         }
-        if ((BigDecimal.class.equals(type)) || (BigDecimal.class.equals(type))) {
-            return true;
-        }
-        return false;
+        return ((BigDecimal.class.equals(type)) || (BigDecimal.class.equals(type)));
     }
 
     /**
-     * Utility method to determine whether value being put in the Cell is double-like type.
+     * Utility method to determine whether value being put in the Cell is
+     * double-like type.
      *
      * @param type the type
      * @return true, if is double-like
@@ -1000,10 +1033,7 @@ public class ExcelExport extends TableExport {
         if ((Double.class.equals(type)) || (double.class.equals(type))) {
             return true;
         }
-        if ((Float.class.equals(type)) || (float.class.equals(type))) {
-            return true;
-        }
-        return false;
+        return ((Float.class.equals(type)) || (float.class.equals(type)));
     }
 
     /**
@@ -1218,7 +1248,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Sets the flag indicating whether a totals row will be added to the report or not.
+     * Sets the flag indicating whether a totals row will be added to the report
+     * or not.
      *
      * @param displayTotals boolean
      */
@@ -1231,7 +1262,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * See value of flag indicating whether the first column should be treated as row headers.
+     * See value of flag indicating whether the first column should be treated
+     * as row headers.
      *
      * @return boolean
      */
@@ -1249,7 +1281,8 @@ public class ExcelExport extends TableExport {
     }
 
     /**
-     * Set value of flag indicating whether the first column should be treated as row headers.
+     * Set value of flag indicating whether the first column should be treated
+     * as row headers.
      *
      * @param rowHeaders boolean
      */

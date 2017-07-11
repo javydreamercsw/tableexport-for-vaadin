@@ -19,8 +19,8 @@
 package de.catma.util;
 
 import de.catma.ExceptionHandler;
-
 import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Utility for safe closing of {@link Closeable}s.
@@ -40,8 +40,7 @@ public class CloseSafe {
             if (closeable != null) {
                 closeable.close();
             }
-        }
-        catch (Exception exc) {
+        } catch (IOException exc) {
             ExceptionHandler.log(exc);
         }
     }

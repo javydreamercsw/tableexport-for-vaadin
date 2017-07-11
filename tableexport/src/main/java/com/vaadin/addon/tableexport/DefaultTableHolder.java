@@ -35,7 +35,7 @@ public class DefaultTableHolder implements TableHolder {
         this(table.getContainerDataSource());
         this.heldTable = table;
         // The order and visibility of the columns are determined by the Table
-        this.propIds = new LinkedList<Object>(Arrays.asList(table.getVisibleColumns()));
+        this.propIds = new LinkedList<>(Arrays.asList(table.getVisibleColumns()));
     }
 
     public DefaultTableHolder(Grid grid) {
@@ -43,7 +43,7 @@ public class DefaultTableHolder implements TableHolder {
         this.heldGrid = grid;
 
         List<Grid.Column> columns = grid.getColumns();
-        this.propIds = new LinkedList<Object>();
+        this.propIds = new LinkedList<>();
         for (Grid.Column c: columns) {
             propIds.add(c.getPropertyId());
         }

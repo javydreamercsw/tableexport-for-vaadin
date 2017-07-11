@@ -1,23 +1,29 @@
 /*
  * ====================================================================
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * ====================================================================
  */
 package com.vaadin.addon.tableexport;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Serializable;
+import java.util.ArrayList;
 import org.apache.poi.hssf.eventusermodel.EventWorkbookBuilder.SheetRecordCollectingListener;
 import org.apache.poi.hssf.eventusermodel.FormatTrackingHSSFListener;
 import org.apache.poi.hssf.eventusermodel.HSSFEventFactory;
@@ -43,20 +49,14 @@ import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-
 /**
- * A XLS -> CSV processor, that uses the MissingRecordAware EventModel code to ensure it outputs all
- * columns and rows.
- * 
+ * A XLS -> CSV processor, that uses the MissingRecordAware EventModel code to
+ * ensure it outputs all columns and rows.
+ *
  * @author Nick Burch
  */
 public class XLS2CSVmra implements HSSFListener, Serializable {
+
     private int minColumns;
     private POIFSFileSystem fs;
     private PrintStream output;
@@ -64,10 +64,14 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
     private int lastRowNumber;
     private int lastColumnNumber;
 
-    /** Should we output the formula, or the value it has? */
-    private boolean outputFormulaValues = true;
+    /**
+     * Should we output the formula, or the value it has?
+     */
+    private final boolean outputFormulaValues = true;
 
-    /** For parsing Formulas */
+    /**
+     * For parsing Formulas
+     */
     private SheetRecordCollectingListener workbookBuildingListener;
     private HSSFWorkbook stubWorkbook;
 
@@ -75,12 +79,14 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
     private SSTRecord sstRecord;
     private FormatTrackingHSSFListener formatListener;
 
-    /** So we known which sheet we're on */
+    /**
+     * So we known which sheet we're on
+     */
     @SuppressWarnings("unused")
     private int sheetIndex = -1;
     private BoundSheetRecord[] orderedBSRs;
     @SuppressWarnings("rawtypes")
-    private ArrayList boundSheetRecords = new ArrayList();
+    private final ArrayList boundSheetRecords = new ArrayList();
 
     // For handling formulas with string results
     private int nextRow;
@@ -89,13 +95,11 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
 
     /**
      * Creates a new XLS -> CSV converter
-     * 
-     * @param fs
-     *            The POIFSFileSystem to process
-     * @param output
-     *            The PrintStream to output the CSV to
-     * @param minColumns
-     *            The minimum number of columns to output, or -1 for no minimum
+     *
+     * @param fs The POIFSFileSystem to process
+     * @param output The PrintStream to output the CSV to
+     * @param minColumns The minimum number of columns to output, or -1 for no
+     * minimum
      */
     public XLS2CSVmra(final POIFSFileSystem fs, final PrintStream output, final int minColumns) {
         this.fs = fs;
@@ -105,11 +109,10 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
 
     /**
      * Creates a new XLS -> CSV converter
-     * 
-     * @param filename
-     *            The file to process
-     * @param minColumns
-     *            The minimum number of columns to output, or -1 for no minimum
+     *
+     * @param filename The file to process
+     * @param minColumns The minimum number of columns to output, or -1 for no
+     * minimum
      * @throws IOException
      * @throws FileNotFoundException
      */
@@ -120,6 +123,8 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
 
     /**
      * Initiates the processing of the XLS file to CSV
+     *
+     * @throws java.io.IOException
      */
     public void process() throws IOException {
         final MissingRecordAwareHSSFListener listener = new MissingRecordAwareHSSFListener(this);
@@ -139,7 +144,8 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
     }
 
     /**
-     * Main HSSFListener method, processes events, and outputs the CSV as the file is processed.
+     * Main HSSFListener method, processes events, and outputs the CSV as the
+     * file is processed.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -149,10 +155,10 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
         String thisStr = null;
 
         switch (record.getSid()) {
-            case BoundSheetRecord.sid :
+            case BoundSheetRecord.sid:
                 boundSheetRecords.add(record);
                 break;
-            case BOFRecord.sid :
+            case BOFRecord.sid:
                 final BOFRecord br = (BOFRecord) record;
                 if (br.getType() == BOFRecord.TYPE_WORKSHEET) {
                     // Create sub workbook if required
@@ -176,18 +182,18 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
                 }
                 break;
 
-            case SSTRecord.sid :
+            case SSTRecord.sid:
                 sstRecord = (SSTRecord) record;
                 break;
 
-            case BlankRecord.sid :
+            case BlankRecord.sid:
                 final BlankRecord brec = (BlankRecord) record;
 
                 thisRow = brec.getRow();
                 thisColumn = brec.getColumn();
                 thisStr = "";
                 break;
-            case BoolErrRecord.sid :
+            case BoolErrRecord.sid:
                 final BoolErrRecord berec = (BoolErrRecord) record;
 
                 thisRow = berec.getRow();
@@ -195,7 +201,7 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
                 thisStr = "";
                 break;
 
-            case FormulaRecord.sid :
+            case FormulaRecord.sid:
                 final FormulaRecord frec = (FormulaRecord) record;
 
                 thisRow = frec.getRow();
@@ -212,12 +218,12 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
                         thisStr = formatListener.formatNumberDateCell(frec);
                     }
                 } else {
-                    thisStr =
-                            '"' + HSSFFormulaParser.toFormulaString(stubWorkbook,
+                    thisStr
+                            = '"' + HSSFFormulaParser.toFormulaString(stubWorkbook,
                                     frec.getParsedExpression()) + '"';
                 }
                 break;
-            case StringRecord.sid :
+            case StringRecord.sid:
                 if (outputNextStringRecord) {
                     // String for formula
                     final StringRecord srec = (StringRecord) record;
@@ -228,14 +234,14 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
                 }
                 break;
 
-            case LabelRecord.sid :
+            case LabelRecord.sid:
                 final LabelRecord lrec = (LabelRecord) record;
 
                 thisRow = lrec.getRow();
                 thisColumn = lrec.getColumn();
                 thisStr = '"' + lrec.getValue() + '"';
                 break;
-            case LabelSSTRecord.sid :
+            case LabelSSTRecord.sid:
                 final LabelSSTRecord lsrec = (LabelSSTRecord) record;
 
                 thisRow = lsrec.getRow();
@@ -246,7 +252,7 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
                     thisStr = '"' + sstRecord.getString(lsrec.getSSTIndex()).toString() + '"';
                 }
                 break;
-            case NoteRecord.sid :
+            case NoteRecord.sid:
                 final NoteRecord nrec = (NoteRecord) record;
 
                 thisRow = nrec.getRow();
@@ -254,7 +260,7 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
                 // TODO: Find object to match nrec.getShapeId()
                 thisStr = '"' + "(TODO)" + '"';
                 break;
-            case NumberRecord.sid :
+            case NumberRecord.sid:
                 final NumberRecord numrec = (NumberRecord) record;
 
                 thisRow = numrec.getRow();
@@ -263,14 +269,14 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
                 // Format
                 thisStr = formatListener.formatNumberDateCell(numrec);
                 break;
-            case RKRecord.sid :
+            case RKRecord.sid:
                 final RKRecord rkrec = (RKRecord) record;
 
                 thisRow = rkrec.getRow();
                 thisColumn = rkrec.getColumn();
                 thisStr = '"' + "(TODO)" + '"';
                 break;
-            default :
+            default:
                 break;
         }
 
@@ -296,10 +302,12 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
         }
 
         // Update column and row count
-        if (thisRow > -1)
+        if (thisRow > -1) {
             lastRowNumber = thisRow;
-        if (thisColumn > -1)
+        }
+        if (thisColumn > -1) {
             lastColumnNumber = thisColumn;
+        }
 
         // Handle end of row
         if (record instanceof LastCellOfRowDummyRecord) {

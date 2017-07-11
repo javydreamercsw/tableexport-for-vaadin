@@ -23,12 +23,15 @@ import java.util.UUID;
 
 /**
  * A generator and converter for CATMA UUIDs.
- * <p>CATMA UUIDs have the form CATMA_ followed by an {@link UUID}, e. g.:
+ * <p>
+ * CATMA UUIDs have the form CATMA_ followed by an {@link UUID}, e. g.:
  * CATMA_F6925161-DF51-41D1-BC80-1507E5891CE6</p>
+ *
  * @author marco.petris@web.de
  *
  */
 public class IDGenerator {
+
     public final static String ID_PREFIX = "CATMA_";
 
     /**
@@ -70,7 +73,7 @@ public class IDGenerator {
         }
 
         int index = catmaID.indexOf(
-                IDGenerator.ID_PREFIX)+IDGenerator.ID_PREFIX.length();
+                IDGenerator.ID_PREFIX) + IDGenerator.ID_PREFIX.length();
         return UUID.fromString(catmaID.substring(index));
     }
 

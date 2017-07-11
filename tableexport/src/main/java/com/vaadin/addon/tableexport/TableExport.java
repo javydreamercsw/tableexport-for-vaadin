@@ -2,11 +2,11 @@ package com.vaadin.addon.tableexport;
 
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class TableExport implements Serializable {
@@ -17,10 +17,14 @@ public abstract class TableExport implements Serializable {
     public static String EXCEL_MIME_TYPE = "application/vnd.ms-excel";
     public static String CSV_MIME_TYPE = "text/csv";
 
-    /** The Tableholder to export. */
+    /**
+     * The Tableholder to export.
+     */
     private TableHolder tableHolder;
 
-    /** The window to send the export result */
+    /**
+     * The window to send the export result
+     */
     protected String exportWindow = "_self";
 
     protected String mimeType;
@@ -44,7 +48,7 @@ public abstract class TableExport implements Serializable {
     public final void setTable(final Table table) {
         tableHolder = new DefaultTableHolder(table);
     }
-    
+
     public void setTableHolder(final TableHolder tableHolder) {
         this.tableHolder = tableHolder;
     }
@@ -54,26 +58,33 @@ public abstract class TableExport implements Serializable {
     }
 
     public abstract void convertTable();
+
     public abstract boolean sendConverted();
 
     /**
-     * Create and export the Table contents as some sort of file type. In the case of conversion to
-     * Excel it would be an ".xls" file containing the contents as a report. Only the export()
-     * method needs to be called. If the user wishes to manipulate the converted object to export,
-     * then convertTable() should be called separately, and, after manipulation, sendConverted().
+     * Create and export the Table contents as some sort of file type. In the
+     * case of conversion to Excel it would be an ".xls" file containing the
+     * contents as a report. Only the export() method needs to be called. If the
+     * user wishes to manipulate the converted object to export, then
+     * convertTable() should be called separately, and, after manipulation,
+     * sendConverted().
      */
-
     public void export() {
         convertTable();
         sendConverted();
     }
 
     /**
-     * Utility method to send the converted object to the user, if it has been written to a
-     * temporary File.
-     * 
-     * Code obtained from: http://vaadin.com/forum/-/message_boards/view_message/159583
-     * 
+     * Utility method to send the converted object to the user, if it has been
+     * written to a temporary File.
+     *
+     * Code obtained from:
+     * http://vaadin.com/forum/-/message_boards/view_message/159583
+     *
+     * @param app
+     * @param fileToExport
+     * @param exportFileName
+     * @param mimeType
      * @return true, if successful
      */
     public boolean sendConvertedFileToUser(final UI app, final File fileToExport,
@@ -87,15 +98,15 @@ public abstract class TableExport implements Serializable {
             final String exportFileName) {
         TemporaryFileDownloadResource resource;
         try {
-            resource =
-                    new TemporaryFileDownloadResource(app, exportFileName, mimeType, fileToExport);
+            resource
+                    = new TemporaryFileDownloadResource(app, exportFileName, mimeType, fileToExport);
             if (null == app) {
                 UI.getCurrent().getPage().open(resource, null, false);
             } else {
                 app.getPage().open(resource, null, false);
             }
         } catch (final FileNotFoundException e) {
-            LOGGER.warning("Sending file to user failed with FileNotFoundException " + e);
+            LOGGER.log(Level.WARNING, "Sending file to user failed with FileNotFoundException {0}", e);
             return false;
         }
         return true;

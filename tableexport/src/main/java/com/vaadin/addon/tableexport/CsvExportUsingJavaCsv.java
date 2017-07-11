@@ -4,7 +4,6 @@ import com.csvreader.CsvWriter;
 import com.vaadin.ui.Table;
 import de.catma.util.CloseSafe;
 import de.catma.util.IDGenerator;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,8 +24,8 @@ public class CsvExportUsingJavaCsv extends TableExport {
     }
 
     private File exportFile;
-    private Table table;
-    private String exportFileName;
+    private final Table table;
+    private final String exportFileName;
 
     public CsvExportUsingJavaCsv(Table table, String exportFileName) {
         super(table);
@@ -43,11 +42,11 @@ public class CsvExportUsingJavaCsv extends TableExport {
             final CsvWriter writer = new CsvWriter(fileOut, ',', Charset.forName("UTF-8"));
 
             for (Object itemId : table.getItemIds()) {
-                for (Object propertyId :
-                        table.getContainerDataSource().getContainerPropertyIds()) {
+                for (Object propertyId
+                        : table.getContainerDataSource().getContainerPropertyIds()) {
 
-                    Object value =
-                            table.getItem(itemId).getItemProperty(propertyId).getValue();
+                    Object value
+                            = table.getItem(itemId).getItemProperty(propertyId).getValue();
 
                     if (value == null) {
                         writer.write("");
@@ -59,13 +58,14 @@ public class CsvExportUsingJavaCsv extends TableExport {
             }
 
             CloseSafe.close(new Closeable() {
+                @Override
                 public void close() throws IOException {
                     writer.close();
                 }
             });
 
             CloseSafe.close(fileOut);
-        } catch (Exception e) {
+        } catch (IOException e) {
             CloseSafe.close(fileOut);
             throw new CsvExportException(e);
         }
