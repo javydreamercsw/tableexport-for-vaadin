@@ -10,10 +10,6 @@ Legacy versions of the add-on that worked with Vaadin 7 (< 1.8.0) and Vaadin 6 (
 * This add-on requires the Apache POI library (http://poi.apache.org/). 
 * This add-on uses Charles Anthony's solution from: http://vaadin.com/forum/-/message_boards/view_message/159583
 
-This is basically the fork from [Mletenay](https://github.com/javydreamercsw/tableexport-for-vaadin/commits/master?author=mletenay) with the following changes:
-* vaadin-7 branch is up to date except for the Vaadin 8 changes.
-* master branch has the Vadin 8 support files.
-
 ## Building and running demo
 
 * git clone <url of the github repository>
