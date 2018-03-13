@@ -1,21 +1,5 @@
 package com.vaadin.addon.tableexport;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.PrintSetup;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.CellUtil;
-import org.apache.poi.ss.util.RegionUtil;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,6 +10,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.ss.util.RegionUtil;
+
+import com.vaadin.ui.Grid;
 
 /**
  * The Class ExcelExport. Implementation of TableExport to export Vaadin Tables to Excel .xls files.
@@ -118,46 +110,46 @@ public class ExcelExport extends TableExport {
     protected Map<Object, String> propertyExcelFormatMap = new HashMap<Object, String>();
 
     /**
-     * At minimum, we need a Table to export. Everything else has default settings.
+     * At minimum, we need a Grid to export. Everything else has default settings.
      *
-     * @param table the table
+     * @param grid the grid
      */
-    public ExcelExport(final com.vaadin.v7.ui.Table table) {
-        this(table, null);
+    public ExcelExport(final Grid<?> grid) {
+        this(new DefaultGridHolder(grid), null);
     }
 
     /**
      * Instantiates a new TableExport class.
      *
-     * @param table     the table
+     * @param grid      the grid
      * @param sheetName the sheet name
      */
-    public ExcelExport(final com.vaadin.v7.ui.Table table, final String sheetName) {
-        this(table, sheetName, null);
+    public ExcelExport(final Grid<?> grid, final String sheetName) {
+        this(new DefaultGridHolder(grid), sheetName, null);
     }
 
     /**
      * Instantiates a new TableExport class.
      *
-     * @param table       the table
+     * @param grid         the grid
      * @param sheetName   the sheet name
      * @param reportTitle the report title
      */
-    public ExcelExport(final com.vaadin.v7.ui.Table table, final String sheetName, final String reportTitle) {
-        this(table, sheetName, reportTitle, null);
+    public ExcelExport(final Grid<?> grid, final String sheetName, final String reportTitle) {
+        this(new DefaultGridHolder(grid), sheetName, reportTitle, null);
     }
 
     /**
      * Instantiates a new TableExport class.
      *
-     * @param table          the table
+     * @param grid           the grid
      * @param sheetName      the sheet name
      * @param reportTitle    the report title
      * @param exportFileName the export file name
      */
-    public ExcelExport(final com.vaadin.v7.ui.Table table, final String sheetName, final String reportTitle,
+    public ExcelExport(final Grid<?> grid, final String sheetName, final String reportTitle,
                        final String exportFileName) {
-        this(table, sheetName, reportTitle, exportFileName, true);
+        this(new DefaultGridHolder(grid), sheetName, reportTitle, exportFileName, true);
     }
 
     /**
@@ -165,26 +157,24 @@ public class ExcelExport extends TableExport {
      * constructors end up calling. If the other constructors were called then they pass in the
      * default parameters.
      *
-     * @param table          the table
+     * @param grid           the grid
      * @param sheetName      the sheet name
      * @param reportTitle    the report title
      * @param exportFileName the export file name
      * @param hasTotalsRow   flag indicating whether we should create a totals row
      */
-    public ExcelExport(final com.vaadin.v7.ui.Table table, final String sheetName, final String reportTitle,
+    public ExcelExport(final Grid<?> grid, final String sheetName, final String reportTitle,
                        final String exportFileName, final boolean hasTotalsRow) {
-        this(table, new HSSFWorkbook(), sheetName, reportTitle, exportFileName, hasTotalsRow);
+        this(new DefaultGridHolder(grid), new HSSFWorkbook(), sheetName, reportTitle, exportFileName, hasTotalsRow);
     }
 
-    public ExcelExport(final com.vaadin.v7.ui.Table table, final Workbook wkbk, final String shtName, final String rptTitle,
+    public ExcelExport(final Grid<?> grid, final Workbook wkbk, final String shtName, final String rptTitle,
                        final String xptFileName, final boolean hasTotalsRow) {
-        super(table);
-        this.workbook = wkbk;
-        init(shtName, rptTitle, xptFileName, hasTotalsRow);
+        this(new DefaultGridHolder(grid), wkbk, shtName, rptTitle, xptFileName, hasTotalsRow);
     }
 
     /**
-     * At minimum, we need a Table to export. Everything else has default settings.
+     * At minimum, we need a TableHolder to export. Everything else has default settings.
      *
      * @param tableHolder the tableHolder
      */
@@ -291,14 +281,6 @@ public class ExcelExport extends TableExport {
         this.totalsIntegerCellStyle = defaultTotalsIntegerCellStyle(this.workbook);
         this.columnHeaderCellStyle = defaultHeaderCellStyle(this.workbook);
         this.titleCellStyle = defaultTitleCellStyle(this.workbook);
-    }
-
-    /*
-     * Set a new table to be exported in another workbook tab / sheet.
-     */
-    public void setNextTable(final com.vaadin.v7.ui.Table table, final String sheetName) {
-        setTable(table);
-        sheet = workbook.createSheet(sheetName);
     }
 
     public void setNextTableHolder(final TableHolder tableHolder, final String sheetName) {
@@ -427,17 +409,17 @@ public class ExcelExport extends TableExport {
         titleCell.setCellStyle(titleCellStyle);
         // cell borders don't work on merged ranges so, if there are borders
         // we apply them to the merged range here.
-        if (titleCellStyle.getBorderLeft() != CellStyle.BORDER_NONE) {
-            RegionUtil.setBorderLeft(titleCellStyle.getBorderLeft(), cra, sheet, workbook);
+        if (titleCellStyle.getBorderLeft() != BorderStyle.NONE.getCode()) {
+            RegionUtil.setBorderLeft(titleCellStyle.getBorderLeft(), cra, sheet);
         }
-        if (titleCellStyle.getBorderRight() != CellStyle.BORDER_NONE) {
-            RegionUtil.setBorderRight(titleCellStyle.getBorderRight(), cra, sheet, workbook);
+        if (titleCellStyle.getBorderRight() != BorderStyle.NONE.getCode()) {
+            RegionUtil.setBorderRight(titleCellStyle.getBorderRight(), cra, sheet);
         }
-        if (titleCellStyle.getBorderTop() != CellStyle.BORDER_NONE) {
-            RegionUtil.setBorderTop(titleCellStyle.getBorderTop(), cra, sheet, workbook);
+        if (titleCellStyle.getBorderTop() != BorderStyle.NONE.getCode()) {
+            RegionUtil.setBorderTop(titleCellStyle.getBorderTop(), cra, sheet);
         }
-        if (titleCellStyle.getBorderBottom() != CellStyle.BORDER_NONE) {
-            RegionUtil.setBorderBottom(titleCellStyle.getBorderBottom(), cra, sheet, workbook);
+        if (titleCellStyle.getBorderBottom() != BorderStyle.NONE.getCode()) {
+            RegionUtil.setBorderBottom(titleCellStyle.getBorderBottom(), cra, sheet);
         }
         return 1;
     }
@@ -462,7 +444,7 @@ public class ExcelExport extends TableExport {
             headerCell.setCellStyle(getColumnHeaderStyle(row, col));
 
             final Short poiAlignment = getTableHolder().getCellAlignment(propId);
-            CellUtil.setAlignment(headerCell, workbook, poiAlignment);
+            CellUtil.setAlignment(headerCell, HorizontalAlignment.forInt(poiAlignment));
         }
     }
 
@@ -545,15 +527,9 @@ public class ExcelExport extends TableExport {
     protected int addDataRows(final Sheet sheetToAddTo, final int row) {
         final Collection<?> itemIds = getTableHolder().getItemIds();
         int localRow = row;
-        int count = 0;
         for (final Object itemId : itemIds) {
             addDataRow(sheetToAddTo, itemId, localRow);
-            count = 1;
-            if (count > 1) {
-                sheet.groupRow(localRow + 1, (localRow + count) - 1);
-                sheet.setRowGroupCollapsed(localRow + 1, true);
-            }
-            localRow = localRow + count;
+            localRow++;
         }
         return localRow;
     }
@@ -602,7 +578,7 @@ public class ExcelExport extends TableExport {
     protected void setupCell(Cell sheetCell, Object value, Class<?> valueType, Object propId, Object rootItemId, int row, int col) {
         sheetCell.setCellStyle(getCellStyle(propId, rootItemId, row, col, false));
         Short poiAlignment = getTableHolder().getCellAlignment(propId);
-        CellUtil.setAlignment(sheetCell, workbook, poiAlignment);
+        CellUtil.setAlignment(sheetCell, HorizontalAlignment.forInt(poiAlignment));
         setCellValue(sheetCell, value, valueType, propId);
     }
     
@@ -642,7 +618,7 @@ public class ExcelExport extends TableExport {
      * potentially relevant items that may be used to determine what formatting to return, that are
      * not accessible globally.
      *
-     * @param propertyId the property id
+     * @param propId     the property id
      * @param rootItemId the root item id
      * @param row        the row
      * @param col        the col
@@ -687,14 +663,10 @@ public class ExcelExport extends TableExport {
         // if not over-ridden, use the overall setting
         if (isDoubleOrFloat(propType)) {
             return dataFormatCellStylesMap.get(doubleDataFormat);
-        } else {
-            if (isIntegerLongShortOrBigDecimal(propType)) {
-                return dataFormatCellStylesMap.get(integerDataFormat);
-            } else {
-                if (java.util.Date.class.isAssignableFrom(propType)) {
-                    return dataFormatCellStylesMap.get(dateDataFormat);
-                }
-            }
+        } else if (isIntegerLongShortOrBigDecimal(propType)) {
+            return dataFormatCellStylesMap.get(integerDataFormat);
+        } else if (java.util.Date.class.isAssignableFrom(propType)) {
+            return dataFormatCellStylesMap.get(dateDataFormat);
         }
         return dataFormatCellStylesMap.get(doubleDataFormat);
     }
@@ -722,7 +694,7 @@ public class ExcelExport extends TableExport {
 	protected void setupTotalCell(Cell cell, final Object propId, final int currentRow, final int startRow, int col) {
 		cell.setCellStyle(getCellStyle(propId, currentRow, startRow, col, true));
 		Short poiAlignment = getTableHolder().getCellAlignment(propId);
-		CellUtil.setAlignment(cell, workbook, poiAlignment);
+		CellUtil.setAlignment(cell, HorizontalAlignment.forInt(poiAlignment));
 		Class<?> propType = getTableHolder().getPropertyType(propId);
 		if (isNumeric(propType)) {
 			CellRangeAddress cra = new CellRangeAddress(startRow, currentRow - 1, col, col);
@@ -786,10 +758,10 @@ public class ExcelExport extends TableExport {
         CellStyle style;
         final Font titleFont = wb.createFont();
         titleFont.setFontHeightInPoints((short) 18);
-        titleFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
+        titleFont.setBold(true);
         style = wb.createCellStyle();
-        style.setAlignment(CellStyle.ALIGN_CENTER);
-        style.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
         style.setFont(titleFont);
         return style;
     }
@@ -807,10 +779,10 @@ public class ExcelExport extends TableExport {
         monthFont.setFontHeightInPoints((short) 11);
         monthFont.setColor(IndexedColors.WHITE.getIndex());
         style = wb.createCellStyle();
-        style.setAlignment(CellStyle.ALIGN_CENTER);
-        style.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
         style.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
-        style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setFont(monthFont);
         style.setWrapText(true);
         return style;
@@ -826,15 +798,15 @@ public class ExcelExport extends TableExport {
     protected CellStyle defaultDataCellStyle(final Workbook wb) {
         CellStyle style;
         style = wb.createCellStyle();
-        style.setAlignment(CellStyle.ALIGN_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
         style.setWrapText(true);
-        style.setBorderRight(CellStyle.BORDER_THIN);
+        style.setBorderRight(BorderStyle.THIN);
         style.setRightBorderColor(IndexedColors.BLACK.getIndex());
-        style.setBorderLeft(CellStyle.BORDER_THIN);
+        style.setBorderLeft(BorderStyle.THIN);
         style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
-        style.setBorderTop(CellStyle.BORDER_THIN);
+        style.setBorderTop(BorderStyle.THIN);
         style.setTopBorderColor(IndexedColors.BLACK.getIndex());
-        style.setBorderBottom(CellStyle.BORDER_THIN);
+        style.setBorderBottom(BorderStyle.THIN);
         style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
         style.setDataFormat(doubleDataFormat);
         return style;
@@ -850,10 +822,10 @@ public class ExcelExport extends TableExport {
     protected CellStyle defaultTotalsDoubleCellStyle(final Workbook wb) {
         CellStyle style;
         style = wb.createCellStyle();
-        style.setAlignment(CellStyle.ALIGN_CENTER);
-        style.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
         style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setDataFormat(doubleDataFormat);
         return style;
     }
@@ -868,10 +840,10 @@ public class ExcelExport extends TableExport {
     protected CellStyle defaultTotalsIntegerCellStyle(final Workbook wb) {
         CellStyle style;
         style = wb.createCellStyle();
-        style.setAlignment(CellStyle.ALIGN_CENTER);
-        style.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
         style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setDataFormat(integerDataFormat);
         return style;
     }
