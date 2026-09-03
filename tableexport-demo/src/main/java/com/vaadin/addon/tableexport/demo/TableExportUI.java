@@ -46,7 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Theme("tableexport-theme")
-@Widgetset("com.vaadin.addon.tableexport.demo.TableExportWidgetset")
+@Widgetset("com.vaadin.DefaultWidgetSet")
 public class TableExportUI extends UI {
 
     private static final long serialVersionUID = -5436901535719211794L;

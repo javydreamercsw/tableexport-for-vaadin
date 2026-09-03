@@ -27,17 +27,7 @@
     <repositories>
         <repository>
             <id>vaadin-addons</id>
-            <url>http://maven.vaadin.com/vaadin-addons</url>
-        </repository>
-        <repository>
-            <id>vaadin-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <url>https://maven.vaadin.com/vaadin-addons</url>
         </repository>
     </repositories>
 
@@ -69,6 +59,10 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-client-compiled</artifactId>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -110,8 +104,10 @@
                     <execution>
                         <goals>
                             <goal>update-theme</goal>
-                            <goal>update-widgetset</goal>
-                            <goal>compile</goal>
+                            <!-- GWT widgetset compilation requires a Java 8 toolchain; the
+                            demo uses the stock DefaultWidgetSet from vaadin-client-compiled -->
+                            <!-- <goal>update-widgetset</goal> -->
+                            <!-- <goal>compile</goal> -->
                             <!-- disabled by default to use on-the-fly theme compilation -->
                             <!-- <goal>compile-theme</goal> -->
                         </goals>
